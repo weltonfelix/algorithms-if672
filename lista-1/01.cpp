@@ -71,7 +71,7 @@ int main()
         if (stacks[i]->top && stacks[i]->top->number % 2 == packets_in_stack % 2)
         {
           int new_number = std::abs(packets_in_stack - stacks[i]->top->number);
-          stacks[i]->pop();
+          delete stacks[i]->pop();
           Object *box = new Object(new_number, prev_box);
           stacks[i]->push(box);
         }
@@ -87,5 +87,12 @@ int main()
   for (int i = 0; i < stacks_count; i++)
   {
     std::cout << "Pilha " << i + 1 << ": " << stacks[i]->size << " " << stacks[i]->top->number << std::endl;
+    
+    while (!stacks[i]->stack_empty())
+    {
+      delete stacks[i]->pop();
+    }
+    
+    delete stacks[i];
   }
 }
