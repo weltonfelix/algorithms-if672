@@ -141,23 +141,24 @@ private:
     int l = PriorityQueue<T>::left(i);
     int r = PriorityQueue<T>::right(i);
 
-    int smallest = -2;
+    int smallest;
 
-    if (l < this->size && ((*(this->heap[l]->priority) < *(element->priority) && *(this->heap[l]->priority) != -1) || (*(element->priority) == -1 && *(this->heap[l]->priority) != -1)))
-    {
-      smallest = l;
-    }
-    else
-    {
-      smallest = i;
-    }
+    // if left element has lower priority than current element (-1 is +infinity priority)
+    bool isLeftSmallerThanEl = l < this->size &&                   // if left element exists, and
+                               *(this->heap[l]->priority) != -1 && // left priority is not +infinity
+                               (*(element->priority) == -1 || *(this->heap[l]->priority) < *(element->priority));
 
-    if (r < this->size && ((*(this->heap[r]->priority) < *(this->heap[smallest]->priority) && *(this->heap[r]->priority) != -1) || ((*(this->heap[smallest]->priority) == -1 && (*(this->heap[r]->priority) != -1)))))
-    {
-      smallest = r;
-    }
+    smallest = isLeftSmallerThanEl ? l : i;
 
-    if (smallest != i)
+    // if right element has lower priority than current smallest element (-1 is +infinity priority)
+    bool isRightSmallerThanSmallest = r < this->size && // if right element exists
+                                      *(this->heap[r]->priority) != -1 &&
+                                      (*(this->heap[smallest]->priority) == -1 ||
+                                       *(this->heap[r]->priority) < *(this->heap[smallest]->priority));
+
+    smallest = isRightSmallerThanSmallest ? r : smallest;
+
+    if (smallest != i) // if smallest element is not the current element, swap them and call minHeapify again
     {
       PriorityQueueObject<T> *aux = this->heap[i];
       this->heap[i] = this->heap[smallest];
@@ -196,7 +197,7 @@ public:
     this->decreaseKey(el, priority);
   };
 
-  void decreaseKey(T *el, int *updated_key)
+  void decreaseKey(T *el, int *newPriority)
   {
     int elIndex = -1;
 
@@ -215,16 +216,22 @@ public:
       throw std::invalid_argument("Element not found");
     }
 
-    while (
-        elIndex > 0 &&
-        ((*(this->heap[MinPriorityQueue::parent(elIndex)]->priority) > *updated_key && *updated_key != -1) ||
-         *(this->heap[MinPriorityQueue::parent(elIndex)]->priority) == -1))
+    // lambda function to check if element has lower priority than its parent
+    auto elementHasLowerPriority = [&]() -> bool
+    {
+      int parentPriority = *(this->heap[this->parent(elIndex)]->priority);
+
+      return parentPriority == -1 || (parentPriority > *newPriority && *newPriority != -1);
+    };
+
+    // while element has lower priority than its parent, swap them
+    while (elIndex > 0 && elementHasLowerPriority())
     {
       PriorityQueueObject<T> *aux = this->heap[elIndex];
-      this->heap[elIndex] = this->heap[MinPriorityQueue::parent(elIndex)];
-      this->heap[MinPriorityQueue::parent(elIndex)] = aux;
+      this->heap[elIndex] = this->heap[this->parent(elIndex)];
+      this->heap[this->parent(elIndex)] = aux;
 
-      elIndex = MinPriorityQueue::parent(elIndex);
+      elIndex = this->parent(elIndex);
     }
   }
 };
