@@ -138,8 +138,8 @@ class MinPriorityQueue : public PriorityQueue<T>
 private:
   void minHeapify(PriorityQueueObject<T> *element, int i)
   {
-    int l = PriorityQueue<T>::left(i);
-    int r = PriorityQueue<T>::right(i);
+    int l = this->left(i);
+    int r = this->right(i);
 
     int smallest;
 
