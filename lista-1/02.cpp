@@ -3,13 +3,13 @@
 #define LEFT "esquerdo"
 #define RIGHT "direito"
 
-class Object
+class QueueObject
 {
 public:
-  Object *next;
+  QueueObject *next;
   int length_cm;
 
-  Object(int length_cm, Object *next)
+  QueueObject(int length_cm, QueueObject *next)
   {
     this->length_cm = length_cm;
     this->next = next;
@@ -20,17 +20,17 @@ class Queue
 {
 public:
   int size = 0;
-  Object *head;
-  Object *tail;
+  QueueObject *head;
+  QueueObject *tail;
 
-  bool queue_empty()
+  bool isEmpty()
   {
     return this->size == 0;
   }
 
-  void enqueue(Object *obj)
+  void enqueue(QueueObject *obj)
   {
-    if (this->queue_empty())
+    if (this->isEmpty())
     {
       this->head = obj;
       this->tail = obj;
@@ -44,9 +44,9 @@ public:
     this->size++;
   }
 
-  Object *dequeue()
+  QueueObject *dequeue()
   {
-    if (this->queue_empty())
+    if (this->isEmpty())
     {
       return NULL;
     }
@@ -54,7 +54,7 @@ public:
     {
       this->size--;
 
-      Object *old_head = this->head;
+      QueueObject *old_head = this->head;
       this->head = this->head->next;
 
       return old_head;
@@ -87,7 +87,7 @@ int main()
       std::cin >> car_length_cm;
       std::cin >> river_side;
 
-      Object *new_car = new Object(car_length_cm, NULL);
+      QueueObject *new_car = new QueueObject(car_length_cm, NULL);
 
       if (river_side == LEFT)
       {
@@ -103,27 +103,27 @@ int main()
     int remaining_space_left_cm = ferry_length_cm;
     int remaining_space_right_cm = ferry_length_cm;
 
-    while (!left_queue.queue_empty() || !right_queue.queue_empty())
+    while (!left_queue.isEmpty() || !right_queue.isEmpty())
     {
-      while (!left_queue.queue_empty() && remaining_space_left_cm - left_queue.head->length_cm >= 0)
+      while (!left_queue.isEmpty() && remaining_space_left_cm - left_queue.head->length_cm >= 0)
       {
-        Object *car = left_queue.dequeue();
+        QueueObject *car = left_queue.dequeue();
         remaining_space_left_cm -= car->length_cm;
         delete car;
       }
-      if (remaining_space_left_cm < ferry_length_cm || !right_queue.queue_empty())
+      if (remaining_space_left_cm < ferry_length_cm || !right_queue.isEmpty())
       {
         travels++;
       }
       remaining_space_left_cm = ferry_length_cm;
 
-      while (!right_queue.queue_empty() && remaining_space_right_cm - right_queue.head->length_cm >= 0)
+      while (!right_queue.isEmpty() && remaining_space_right_cm - right_queue.head->length_cm >= 0)
       {
-        Object *car = right_queue.dequeue();
+        QueueObject *car = right_queue.dequeue();
         remaining_space_right_cm -= car->length_cm;
         delete car;
       }
-      if (remaining_space_right_cm < ferry_length_cm || !left_queue.queue_empty())
+      if (remaining_space_right_cm < ferry_length_cm || !left_queue.isEmpty())
       {
         travels++;
       }

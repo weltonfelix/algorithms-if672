@@ -1,12 +1,12 @@
 #include <iostream>
 
-class Object
+class QueueObject
 {
 public:
-  Object *prev;
+  QueueObject *prev;
   int number;
 
-  Object(int number, Object *prev)
+  QueueObject(int number, QueueObject *prev)
   {
     this->number = number;
     this->prev = prev;
@@ -17,21 +17,21 @@ class Stack
 {
 public:
   int size = 0;
-  Object *top;
+  QueueObject *top;
 
   bool stack_empty()
   {
     return this->size == 0;
   }
 
-  void push(Object *obj)
+  void push(QueueObject *obj)
   {
     obj->prev = this->top;
     this->top = obj;
     this->size++;
   }
 
-  Object *pop()
+  QueueObject *pop()
   {
     if (this->stack_empty())
     {
@@ -40,7 +40,7 @@ public:
     else
     {
       this->size--;
-      Object *old_top = this->top;
+      QueueObject *old_top = this->top;
       this->top = this->top->prev;
 
       return old_top;
@@ -59,7 +59,7 @@ int main()
   {
     int packets_in_stack;
 
-    Object *prev_box = NULL;
+    QueueObject *prev_box = NULL;
     stacks[i] = new Stack();
 
     std::cin;
@@ -72,12 +72,12 @@ int main()
         {
           int new_number = std::abs(packets_in_stack - stacks[i]->top->number);
           delete stacks[i]->pop();
-          Object *box = new Object(new_number, prev_box);
+          QueueObject *box = new QueueObject(new_number, prev_box);
           stacks[i]->push(box);
         }
         else
         {
-          Object *box = new Object(packets_in_stack, prev_box);
+          QueueObject *box = new QueueObject(packets_in_stack, prev_box);
           stacks[i]->push(box);
         }
       }
