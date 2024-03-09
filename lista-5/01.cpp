@@ -3,7 +3,6 @@
 #define WHITE 'W'
 #define GRAY 'G'
 #define BLACK 'B'
-#define EMPTY_ADJACENCY_LIST "Lista Vazia"
 
 class Vertex
 {
@@ -12,11 +11,12 @@ public:
   char color = WHITE;
   int d = -1;
   int f = -1;
-  Vertex *parent = NULL;
+  Vertex *parent;
 
   Vertex(int index)
   {
     this->index = index;
+    this->parent = this;
   }
 };
 
@@ -44,11 +44,6 @@ public:
   {
     this->element = element;
     this->next = next;
-  }
-
-  ~ListObject()
-  {
-    delete element;
   }
 };
 
@@ -80,8 +75,9 @@ class Graph
 private:
   int vertexCount;
   int time;
+  List<Edge> *edges;
 
-  void dfs_visit(Vertex *vertex)
+  void dfsVisit(Vertex *vertex)
   {
     this->time++;
     vertex->d = this->time;
@@ -96,7 +92,7 @@ private:
       if (adjacentVertex->color == WHITE)
       {
         adjacentVertex->parent = vertex;
-        this->dfs_visit(adjacentVertex);
+        this->dfsVisit(adjacentVertex);
       }
 
       currentListObject = currentListObject->next;
@@ -116,6 +112,7 @@ public:
     this->vertexCount = vertexCount;
     this->adj = new List<Edge> *[vertexCount];
     this->vertices = new Vertex *[vertexCount];
+    this->edges = new List<Edge>();
     this->treeSizes = new int[vertexCount];
 
     for (int i = 0; i < vertexCount; i++)
@@ -128,18 +125,29 @@ public:
 
   ~Graph()
   {
-    // for (int i = 0; i < vertexCount; i++)
-    // {
-    //   delete adj[i];
-    // }
+    for (int i = 0; i < vertexCount; i++)
+    {
+      delete adj[i];
+    }
 
-    // for (int i = 0; i < vertexCount; i++)
-    // {
-    //   delete vertices[i];
-    // }
+    for (int i = 0; i < vertexCount; i++)
+    {
+      delete vertices[i];
+    }
 
-    // delete[] adj;
-    // delete[] vertices;
+    ListObject<Edge> *currentListObject = this->edges->head;
+    while (currentListObject != NULL)
+    {
+      ListObject<Edge> *next = currentListObject->next;
+      delete currentListObject->element;
+      currentListObject = next;
+    }
+
+    delete edges;
+
+    delete[] adj;
+    delete[] vertices;
+    delete[] treeSizes;
   }
 
   void addEdge(int vertex1Index, int vertex2Index)
@@ -148,6 +156,7 @@ public:
     Vertex *vertex2 = this->vertices[vertex2Index];
 
     Edge *edge = new Edge(vertex1, vertex2);
+    this->edges->insert(edge);
     this->adj[vertex1Index]->insert(edge);
     this->adj[vertex2Index]->insert(edge);
   }
@@ -157,7 +166,7 @@ public:
     for (int i = 0; i < this->vertexCount; i++)
     {
       this->vertices[i]->color = WHITE;
-      this->vertices[i]->parent = NULL;
+      this->vertices[i]->parent = this->vertices[i];
     }
 
     this->time = 0;
@@ -166,46 +175,34 @@ public:
     {
       if (this->vertices[i]->color == WHITE)
       {
-        this->dfs_visit(this->vertices[i]);
+        this->dfsVisit(this->vertices[i]);
       }
+    }
+  }
+
+  Vertex *findSet(int vertexIndex)
+  {
+    Vertex *vertex = this->vertices[vertexIndex];
+
+    if (vertex != vertex->parent)
+    {
+      vertex->parent = findSet(vertex->parent->index);
+    }
+
+    return vertex->parent;
+  }
+
+  void calculateConnectedComponentsSize()
+  {
+    for (int i = 0; i < this->vertexCount; i++)
+    {
+      this->treeSizes[this->findSet(i)->index]++;
     }
   }
 
   int getTreeSize(int vertexIndex)
   {
-    Vertex *treeRoot = NULL;
-
-    Vertex *currentVertex = this->vertices[vertexIndex];
-    while (currentVertex->parent != NULL)
-    {
-      if (this->treeSizes[currentVertex->index] != 0)
-      {
-        this->treeSizes[vertexIndex] = this->treeSizes[currentVertex->index];
-        return this->treeSizes[currentVertex->index];
-      }
-      currentVertex = currentVertex->parent;
-    }
-
-    treeRoot = currentVertex;
-
-    int treeSize = 0;
-    for (int i = 0; i < this->vertexCount; i++)
-    {
-      Vertex *currentVertex = this->vertices[i];
-      while (currentVertex->parent != NULL)
-      {
-        currentVertex = currentVertex->parent;
-      }
-
-      if (currentVertex->index == treeRoot->index)
-      {
-        treeSize++;
-      }
-    }
-
-    this->treeSizes[vertexIndex] = treeSize;
-
-    return treeSize;
+    return this->treeSizes[findSet(vertexIndex)->index];
   }
 };
 
@@ -224,6 +221,7 @@ int main()
   }
 
   graph.dfs();
+  graph.calculateConnectedComponentsSize();
 
   for (int i = 0; i < usersCount; i++)
   {
